@@ -338,12 +338,12 @@ void Board::whitetactmove () {
         score = 0;
         kopie = *this;
         kopie.xWK = kopie.xWK+i; kopie.yWK = kopie.yWK+j;
-        //prevent simple tie, broken!
         for ( k = -1; k <= 1; k++ ){
           for ( l = -1; l <= 1; l++ ){
             if ( legalforblackking (kopie.xBK+k,kopie.yBK+l) ) {
-              if (kopie.xWK+k == kopie.xWQ && kopie.yWK+l == kopie.yWQ)
+              if (kopie.xBK+k == kopie.xWQ && kopie.yBK+l == kopie.yWQ){
                 score -= 1000;     
+              }
             }
           }
         }
@@ -379,13 +379,13 @@ void Board::whitetactmove () {
       if ( legalforwhitequeen (i,j) ) {
         score = 0;
         kopie = *this; 
-        kopie.xWQ = i; kopie.yWQ = j;
+        kopie.xWQ += i; kopie.yWQ += j;
         //prevent simple tie, broken!
         for ( k = -1; k <= 1; k++ ){
           for ( l = -1; l <= 1; l++ ){
             if ( legalforblackking (kopie.xBK+k,kopie.yBK+l) ) {
                 //cout << "check" << endl;
-              if (xBK+k == kopie.xWQ && yBK+l == kopie.yWQ){
+              if (kopie.xBK+k == kopie.xWQ && kopie.yBK+l == kopie.yWQ){
                 cout << "check" << endl;
                 score -= 1000;     
               }
@@ -462,8 +462,9 @@ void Board::whiteMCmove () {
         for (k = 0; k < 100; k++){
           kopie = *this;
           kopie.xWK = kopie.xWK+i; kopie.yWK = kopie.yWK+j;
-          if (kopie.randomplayout() == 0)
+          if (kopie.randomplayout() == 0){
             score++;
+          }
         }
         if (score > bestscoresofar){
           bestscoresofar = score;
@@ -480,8 +481,9 @@ void Board::whiteMCmove () {
         for (k = 0; k < 100; k++){
           kopie = *this; 
           kopie.xWQ = i; kopie.yWQ = j;
-          if (kopie.randomplayout() == 0)
+          if (kopie.randomplayout() == 0){
             score++;
+          }
         }
         if (score > bestscoresofar){
           bestscoresofar = score;
@@ -557,7 +559,7 @@ int playaMCgame (int somesize, int rounds) {
     board.whiteMCmove();
     themove = board.randomblackmove();
   }
-  cout << "result: " << themove << endl;
+  //cout << "result: " << themove << endl;
   return themove;
 }//playaMCgame
 
@@ -593,13 +595,13 @@ int main (int argc, char* argv[ ]) {
   }//if
   else {
     somesize = 8;
-    simulations = 100;
+    simulations = 1000;
     rounds = 200;
   }//else
   srand (time(NULL));  // seed random generator
   stats[0] = stats[1] = stats[2] = stats[3] = 0;
   for ( i = 0; i < simulations; i++ ){
-    cout << "simulation: " << i << endl;
+     //cout << "simulation: " << i << endl;
      //stats[playagame (somesize,rounds)]++;
      //stats[playaMCgame (somesize, rounds)]++;
      stats[playatactgame (somesize, rounds)]++;
