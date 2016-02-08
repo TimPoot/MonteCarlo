@@ -57,6 +57,7 @@ class Board {
     int randomplayout ( );
     void whiteMCmove ( );
     void whitetactmove ( );
+    double rate ();
 };//Board
 
 // get first non-enter
@@ -324,6 +325,35 @@ void Board::print ( ) {
   A[xWQ][yWQ] = '.';
 }//Board::print
 
+double Board::rate() {
+  if (checkmate())
+    return 100000000;
+  if (legalforblackking(xWQ, yWQ)) 
+    return -9999999;
+  if (numberofblackmoves() == 0 && !incheck(xBK, yBK))
+    return -77777777;
+  //eerste kwadrant
+  if (xBK > xWQ && yBK < yWQ) { 
+   return 1000 / ((thesize - xWQ) * yWQ);
+  }
+  //tweede kwadrant
+  if (xBK < xWQ && yBK < yWQ) {
+    return 1000 / (xWQ * yWQ);
+  }
+  //derde kwadrant
+  if (xBK < xWQ && yBK > yWQ) {
+    return 1000 / (xWQ * (thesize - yWQ));
+  }
+  //vierde kwadrant
+  if (xBK > xWQ && yBK > yWQ) {
+    return 1000 / ((thesize - xWQ) * (thesize - yWQ));
+  }
+  return -1;
+}
+
+
+
+
 void Board::whitetactmove () {
   int score, i, j, k, l;
   int bestmovesofar = -1;
@@ -338,34 +368,9 @@ void Board::whitetactmove () {
         score = 0;
         kopie = *this;
         kopie.xWK = kopie.xWK+i; kopie.yWK = kopie.yWK+j;
-        for ( k = -1; k <= 1; k++ ){
-          for ( l = -1; l <= 1; l++ ){
-            if ( legalforblackking (kopie.xBK+k,kopie.yBK+l) ) {
-              if (kopie.xBK+k == kopie.xWQ && kopie.yBK+l == kopie.yWQ){
-                score -= 1000;     
-              }
-            }
-          }
-        }
-
-        if (kopie.numberofblackmoves() == 0 && !kopie.incheck(kopie.xBK, kopie.yBK))
-          score -= 100;
-        if (kopie.numberofblackmoves() < 6 )
-          score += 10;
-        if (kopie.numberofblackmoves() < 5 )
-          score += 10;
-        if (kopie.numberofblackmoves() < 4 )
-          score += 10;
-        if (kopie.numberofblackmoves() < 3 )
-          score += 10;
-        if (kopie.numberofblackmoves() < 2 )
-          score += 10;
-        if (kopie.incheck(kopie.xBK, kopie.yBK))
-          score += 10;
-        if (kopie.checkmate())
-          score += 1000;
-      
-          
+        //scoring
+        score = (int)kopie.rate();
+        
         if (score > bestscoresofar){
           bestscoresofar = score;
           bestmovesofar = move;
@@ -379,37 +384,9 @@ void Board::whitetactmove () {
       if ( legalforwhitequeen (i,j) ) {
         score = 0;
         kopie = *this; 
-        kopie.xWQ += i; kopie.yWQ += j;
-        //prevent simple tie, broken!
-        for ( k = -1; k <= 1; k++ ){
-          for ( l = -1; l <= 1; l++ ){
-            if ( legalforblackking (kopie.xBK+k,kopie.yBK+l) ) {
-                //cout << "check" << endl;
-              if (kopie.xBK+k == kopie.xWQ && kopie.yBK+l == kopie.yWQ){
-                cout << "check" << endl;
-                score -= 1000;     
-              }
-            }
-          }
-        }
-
-        if (kopie.numberofblackmoves() == 0 && !kopie.incheck(kopie.xBK, kopie.yBK))
-          score -= 100;
-        if (kopie.numberofblackmoves() < 6 )
-          score += 10;
-        if (kopie.numberofblackmoves() < 5 )
-          score += 10;
-        if (kopie.numberofblackmoves() < 4 )
-          score += 10;
-        if (kopie.numberofblackmoves() < 3 )
-          score += 10;
-        if (kopie.numberofblackmoves() < 2 )
-          score += 10;
-        if (kopie.incheck(kopie.xBK, kopie.yBK))
-          score += 10;
-        if (kopie.checkmate())
-          score += 1000;
-                
+        kopie.xWQ = i; kopie.yWQ = j;
+        //scoring
+        score = (int)kopie.rate();
         if (score > bestscoresofar){
           bestscoresofar = score;
           bestmovesofar = move;
@@ -418,8 +395,8 @@ void Board::whitetactmove () {
       }//if
     }
   }
-  //cout << "move: " << bestmovesofar << endl;
-  //cout << "score: " << bestscoresofar << endl;
+  cout << "move: " << bestmovesofar << endl;
+  cout << "score: " << bestscoresofar << endl;
   move = numberK + numberQ;
   for ( i = -1; i <= 1; i++ ){
     for ( j = -1; j <= 1; j++ ){
@@ -569,10 +546,13 @@ int playaMCgame (int somesize, int rounds) {
 // 3 if stopped
 int playatactgame (int somesize, int rounds) {
   Board board (somesize);
+  board.print();
+  cout << "---------------------" << endl;
   int themove = 3;
   while ( themove == 3 && board.countmoves < rounds ) {
     board.whitetactmove ( );
-    themove = board.randomblackmove ( ); 
+    themove = board.randomblackmove ( );
+    board.print(); 
   }//while
   return themove;
 }//playatactgame
@@ -595,8 +575,8 @@ int main (int argc, char* argv[ ]) {
   }//if
   else {
     somesize = 8;
-    simulations = 1000;
-    rounds = 200;
+    simulations = 1;
+    rounds = 20;
   }//else
   srand (time(NULL));  // seed random generator
   stats[0] = stats[1] = stats[2] = stats[3] = 0;
