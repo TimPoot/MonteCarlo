@@ -25,6 +25,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <cmath>
 using namespace std;
 
 const int MAX = 30;
@@ -57,7 +58,7 @@ class Board {
     int randomplayout ( );
     void whiteMCmove ( );
     void whitetactmove ( );
-    double rate (bool qMovef);
+    double rate ();
 };//Board
 
 // get first non-enter
@@ -228,9 +229,9 @@ void Board::randomwhitemove ( ) {
         if ( legalforwhitequeen (i,j) ) {
           if ( move == 0 ) {
             xWQ = i; yWQ = j;
-	    countmoves++;
-	    return;
-	  }//if
+	        countmoves++;
+            return;
+           }//if
 	  move--;
         }//if
 }//Board::randomwhitemove
@@ -325,7 +326,8 @@ void Board::print ( ) {
   A[xWQ][yWQ] = '.';
 }//Board::print
 
-double Board::rate(bool qMove) {
+double Board::rate() {
+  double score = 0;
   if (checkmate())
     return 100000000;
   if (legalforblackking(xWQ, yWQ)) 
@@ -333,51 +335,35 @@ double Board::rate(bool qMove) {
   if (numberofblackmoves() == 0 && !incheck(xBK, yBK))
     return -77777777;
 
-  //Maak rechthoek BK kleiner met WQ
+  //score de grootte van de beweingsruimte
   //eerste kwadrant
-  if (xBK > xWQ && yBK < yWQ && qMove) { 
-   return 3000 / ((thesize - xWQ) * yWQ);
+  if (xBK > xWQ && yBK < yWQ) { 
+   score = 1000 / ((thesize - xWQ) * yWQ);
   }
   //tweede kwadrant
-  if (xBK < xWQ && yBK < yWQ && qMove) {
-    return 3000 / (xWQ * yWQ);
+  if (xBK < xWQ && yBK < yWQ) {
+    score = 1000 / (xWQ * yWQ);
   }
   //derde kwadrant
-  if (xBK < xWQ && yBK > yWQ && qMove) {
-    return 3000 / (xWQ * (thesize - yWQ));
+  if (xBK < xWQ && yBK > yWQ) {
+    score = 1000 / (xWQ * (thesize - yWQ));
   }
   //vierde kwadrant
-  if (xBK > xWQ && yBK > yWQ && qMove) {
-    return 3000 / ((thesize - xWQ) * (thesize - yWQ));
+  if (xBK > xWQ && yBK > yWQ) {
+    score = 1000 / ((thesize - xWQ) * (thesize - yWQ));
   }
+  score *= 100;
+  //score de afstand tussen de koningen
+  score += 1000 / (abs(xBK - xWK) + abs(yBK - yWK));
 
-  //zet WK zo dicht mogeljik bij BK
-  //eerste kwadrant
-  if (xBK > xWK && yBK < yWK && !qMove) { 
-   return 1000 / ((xBK - xWK) + (yWK - yBK));
-  }
-  //tweede kwadrant
-  if (xBK < xWK && yBK < yWK && !qMove) {
-    return 1000 / ((xWK - xBK) + (yWK - yBK));
-  }
-  //derde kwadrant
-  if (xBK < xWK && yBK > yWK && !qMove) {
-    return 1000 / ((xWK - xBK) + (yBK - yWK));
-  }
-  //vierde kwadrant
-  if (xBK < xWK && yBK > yWK && !qMove) {
-    return 1000 / ((xWK - xBK) + (yBK - yWK));
-  }
-  
-
-  return -1;
+  return score;
 }
 
 
 
 
 void Board::whitetactmove () {
-  int score, i, j, k, l;
+  int score, i, j;
   int bestmovesofar = -1;
   int bestscoresofar = -1000;
   int numberK = numberofwhitekingmoves ( );
@@ -391,7 +377,7 @@ void Board::whitetactmove () {
         kopie = *this;
         kopie.xWK = kopie.xWK+i; kopie.yWK = kopie.yWK+j;
         //scoring
-        score = (int)kopie.rate(false);
+        score = (int)kopie.rate();
         
         if (score > bestscoresofar){
           bestscoresofar = score;
@@ -408,7 +394,7 @@ void Board::whitetactmove () {
         kopie = *this; 
         kopie.xWQ = i; kopie.yWQ = j;
         //scoring
-        score = (int)kopie.rate(true);
+        score = (int)kopie.rate();
         if (score > bestscoresofar){
           bestscoresofar = score;
           bestmovesofar = move;
@@ -558,7 +544,6 @@ int playaMCgame (int somesize, int rounds) {
     board.whiteMCmove();
     themove = board.randomblackmove();
   }
-  //cout << "result: " << themove << endl;
   return themove;
 }//playaMCgame
 
