@@ -57,7 +57,7 @@ class Board {
     int randomplayout ( );
     void whiteMCmove ( );
     void whitetactmove ( );
-    double rate ();
+    double rate (bool qMovef);
 };//Board
 
 // get first non-enter
@@ -325,29 +325,51 @@ void Board::print ( ) {
   A[xWQ][yWQ] = '.';
 }//Board::print
 
-double Board::rate() {
+double Board::rate(bool qMove) {
   if (checkmate())
     return 100000000;
   if (legalforblackking(xWQ, yWQ)) 
     return -9999999;
   if (numberofblackmoves() == 0 && !incheck(xBK, yBK))
     return -77777777;
+
+  //Maak rechthoek BK kleiner met WQ
   //eerste kwadrant
-  if (xBK > xWQ && yBK < yWQ) { 
-   return 1000 / ((thesize - xWQ) * yWQ);
+  if (xBK > xWQ && yBK < yWQ && qMove) { 
+   return 3000 / ((thesize - xWQ) * yWQ);
   }
   //tweede kwadrant
-  if (xBK < xWQ && yBK < yWQ) {
-    return 1000 / (xWQ * yWQ);
+  if (xBK < xWQ && yBK < yWQ && qMove) {
+    return 3000 / (xWQ * yWQ);
   }
   //derde kwadrant
-  if (xBK < xWQ && yBK > yWQ) {
-    return 1000 / (xWQ * (thesize - yWQ));
+  if (xBK < xWQ && yBK > yWQ && qMove) {
+    return 3000 / (xWQ * (thesize - yWQ));
   }
   //vierde kwadrant
-  if (xBK > xWQ && yBK > yWQ) {
-    return 1000 / ((thesize - xWQ) * (thesize - yWQ));
+  if (xBK > xWQ && yBK > yWQ && qMove) {
+    return 3000 / ((thesize - xWQ) * (thesize - yWQ));
   }
+
+  //zet WK zo dicht mogeljik bij BK
+  //eerste kwadrant
+  if (xBK > xWK && yBK < yWK && !qMove) { 
+   return 1000 / ((xBK - xWK) + (yWK - yBK));
+  }
+  //tweede kwadrant
+  if (xBK < xWK && yBK < yWK && !qMove) {
+    return 1000 / ((xWK - xBK) + (yWK - yBK));
+  }
+  //derde kwadrant
+  if (xBK < xWK && yBK > yWK && !qMove) {
+    return 1000 / ((xWK - xBK) + (yBK - yWK));
+  }
+  //vierde kwadrant
+  if (xBK < xWK && yBK > yWK && !qMove) {
+    return 1000 / ((xWK - xBK) + (yBK - yWK));
+  }
+  
+
   return -1;
 }
 
@@ -369,7 +391,7 @@ void Board::whitetactmove () {
         kopie = *this;
         kopie.xWK = kopie.xWK+i; kopie.yWK = kopie.yWK+j;
         //scoring
-        score = (int)kopie.rate();
+        score = (int)kopie.rate(false);
         
         if (score > bestscoresofar){
           bestscoresofar = score;
@@ -386,7 +408,7 @@ void Board::whitetactmove () {
         kopie = *this; 
         kopie.xWQ = i; kopie.yWQ = j;
         //scoring
-        score = (int)kopie.rate();
+        score = (int)kopie.rate(true);
         if (score > bestscoresofar){
           bestscoresofar = score;
           bestmovesofar = move;
