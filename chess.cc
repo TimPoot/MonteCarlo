@@ -328,13 +328,27 @@ void Board::print ( ) {
 
 double Board::rate() {
   double score = 0;
+  int size = thesize - 1;
+  bool diagonal;
   if (checkmate())
-    return 100000000;
+    return 1000000000;
   if (legalforblackking(xWQ, yWQ)) 
     return -9999999;
   if (numberofblackmoves() == 0 && !incheck(xBK, yBK))
     return -77777777;
-
+  //kwadrant 1
+  if (xBK < thesize / 2 && yBK > thesize / 2)
+    diagonal = false;
+  //kwadrant 2
+  if (xBK < thesize / 2 && yBK < thesize / 2)
+    diagonal = true;
+  //kwadrant 3
+  if (xBK > thesize / 2 && yBK < thesize / 2)
+    diagonal = false;
+  //kwadrant 4
+  if (xBK > thesize / 2 && yBK > thesize / 2)
+    diagonal = true;
+  
   //score de grootte van de beweingsruimte
   //eerste kwadrant
   if (xBK > xWQ && yBK < yWQ) { 
@@ -353,8 +367,30 @@ double Board::rate() {
     score = 1000 / ((thesize - xWQ) * (thesize - yWQ));
   }
   score *= 100;
+  //Points assigned for if WQ and WK stand on opposing sides of the board
+  if (diagonal){
+    //cout << "NW->SE" << endl;
+    if ((xWK > yWK && xWQ < yWQ)
+    || (xWK < yWK && xWQ > yWQ)
+    ){
+      //cout << "hit" << endl;
+      score += 100;
+    }
+  }else{
+    //cout << "NE->SW" << endl;
+    if ((xWK < size - yWK && xWQ > size - yWQ)
+    || (xWK > size - yWK && xWQ < size - yWQ)
+    ){
+      //cout << "hit 2" << endl;
+      score += 100;
+    }
+  }
+  score *= 100;
   //score de afstand tussen de koningen
   score += 1000 / (abs(xBK - xWK) + abs(yBK - yWK));
+  
+  //cout << (int)score << endl;
+  //print();
 
   return score;
 }
@@ -583,7 +619,7 @@ int main (int argc, char* argv[ ]) {
   else {
     somesize = 8;
     simulations = 1;
-    rounds = 20;
+    rounds = 1;
   }//else
   srand (time(NULL));  // seed random generator
   stats[0] = stats[1] = stats[2] = stats[3] = 0;
